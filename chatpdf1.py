@@ -14,35 +14,20 @@ load_dotenv()
 os.getenv("GOOGLE_API_KEY")
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-
-
-
-
-
 def get_pdf_text(pdf_docs):
-    text=""
+    text = ""
     for pdf in pdf_docs:
-        pdf_reader= PdfReader(pdf)
+        pdf_reader = PdfReader(pdf)
         for page in pdf_reader.pages:
-            text+= page.extract_text()
-    return  text
-
-
+            text += page.extract_text()
+    return text
 
 def get_text_chunks(text):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
     chunks = text_splitter.split_text(text)
     return chunks
 
-
-def get_vector_store(text_chunks):
-    embeddings = GoogleGenerativeAIEmbeddings(model = "models/embedding-001")
-    vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
-    vector_store.save_local("faiss_index")
-
-
 def get_conversational_chain():
-
     prompt_template = """
         Vérifie si le document fourni est un curriculum vitae (CV). 
         Si c'est un CV, analyse-le et donne des remarques sur les erreurs d'orthographe et de grammaire. Si le contenu du CV n'est pas riche, donne des recommandations de rédaction.
@@ -54,55 +39,44 @@ def get_conversational_chain():
 
         Answer:    """
 
-    model = ChatGoogleGenerativeAI(model="gemini-pro",
-                             temperature=0.3)
-
-    prompt = PromptTemplate(template = prompt_template, input_variables = ["context", "question"])
+    model = ChatGoogleGenerativeAI(model="gemini-pro", temperature=0.3)
+    prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
     chain = load_qa_chain(model, chain_type="stuff", prompt=prompt)
 
     return chain
 
-
-
-def user_input(user_question):
-    embeddings = GoogleGenerativeAIEmbeddings(model = "models/embedding-001")
-    
-    new_db = FAISS.load_local("faiss_index", embeddings,allow_dangerous_deserialization=True)
-    docs = new_db.similarity_search(user_question)
+def user_input(user_question, text_chunks):
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
+    docs = vector_store.similarity_search(user_question)
 
     chain = get_conversational_chain()
-
     
     response = chain(
-        {"input_documents":docs, "question": user_question}
-        , return_only_outputs=True)
+        {"input_documents": docs, "question": user_question},
+        return_only_outputs=True
+    )
 
-    print(response)
     st.write("Reply: ", response["output_text"])
 
-
-
-
 def main():
-    st.set_page_config("Chat PDF")
+    st.set_page_config(page_title="Chat PDF")
     st.header("Optimisez votre CV et obtenez des conseils de rédaction personnalisés grâce à notre chatbot intelligent !💁")
 
     user_question = "Analyse le CV"
 
-    if user_question:
-        user_input(user_question)
-
-    with st.sidebar:
-        st.title("Menu:")
-        pdf_docs = st.file_uploader("Téléchargez vos fichiers PDF et cliquez sur le bouton Soumettre et Traiter", accept_multiple_files=True)
-        if st.button("Soumettre et Traiter"):
-            with st.spinner("Processing..."):
+    st.title("Menu:")
+    pdf_docs = st.file_uploader("Téléchargez vos fichiers PDF et cliquez sur le bouton Soumettre et Traiter", accept_multiple_files=True)
+    if st.button("Soumettre et Traiter"):
+        with st.spinner("Processing..."):
+            if pdf_docs:
                 raw_text = get_pdf_text(pdf_docs)
                 text_chunks = get_text_chunks(raw_text)
-                get_vector_store(text_chunks)
                 st.success("Done")
-
-
+                if user_question and text_chunks:           
+                    user_input(user_question, text_chunks)
+            else:
+                st.error("Veuillez télécharger au moins un fichier PDF.")
 
 if __name__ == "__main__":
     main()
