@@ -85,17 +85,17 @@ def user_input(user_question):
 
 def main():
     st.set_page_config("Chat PDF")
-    st.header("Chat with PDF using Gemini💁")
+    st.header("Optimisez votre CV et obtenez des conseils de rédaction personnalisés grâce à notre chatbot intelligent !💁")
 
-    user_question = st.text_input("Ask a Question from the PDF Files")
+    user_question = "Analyse le CV"
 
     if user_question:
         user_input(user_question)
 
     with st.sidebar:
         st.title("Menu:")
-        pdf_docs = st.file_uploader("Upload your PDF Files and Click on the Submit & Process Button", accept_multiple_files=True)
-        if st.button("Submit & Process"):
+        pdf_docs = st.file_uploader("Téléchargez vos fichiers PDF et cliquez sur le bouton Soumettre et Traiter", accept_multiple_files=True)
+        if st.button("Soumettre et Traiter"):
             with st.spinner("Processing..."):
                 raw_text = get_pdf_text(pdf_docs)
                 text_chunks = get_text_chunks(raw_text)
