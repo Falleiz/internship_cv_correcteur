@@ -16,8 +16,7 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 def get_pdf_text(pdf_docs):
     text = ""
-    for pdf in pdf_docs:
-        pdf_reader = PdfReader(pdf)
+        pdf_reader = PdfReader(pdf_docs)
         for page in pdf_reader.pages:
             text += page.extract_text()
     return text
@@ -62,8 +61,8 @@ def user_input(user_question, text_chunks, sector):
     st.write("Reply: ", response["output_text"])
 
 def main():
-    st.set_page_config(page_title="Chat PDF")
-    st.header("Optimisez votre CV et obtenez des conseils de rédaction personnalisés grâce à notre chatbot intelligent !💁")
+    st.set_page_config(page_title="centrale-internship")
+    st.header("Optimisez votre CV et obtenez des conseils de rédaction personnalisés.")
 
     user_question = "Analyse le CV"
 
