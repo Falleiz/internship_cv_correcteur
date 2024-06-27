@@ -31,9 +31,9 @@ def get_conversational_chain():
     prompt_template = """
         Vérifie si le document fourni est un curriculum vitae (CV). 
         Si c'est un CV, analyse-le et donne des remarques sur les erreurs d'orthographe et de grammaire.
-        Si le contenu du CV n'est pas pertinent par rapport au secteur d'activité {sector}, donne des recommandations de rédaction pour l'améliorer.
+        Si le contenu du CV n'est pas pertinent par rapport au secteur d'activité {sector} et au type de stage {internship_type}, donne des recommandations de rédaction pour l'améliorer.
         Ne fournis pas de mauvaises recommandations.
-        Dans le cas contraire, félicite l'auteur pour la pertinence et la richesse de son CV dans le secteur {sector}.
+        Dans le cas contraire, félicite l'auteur pour la pertinence et la richesse de son CV dans le secteur {sector} pour le type de stage {internship_type}.
         Juge la pertinence du CV en fonction du secteur d'activité spécifié par l'utilisateur : {sector}.
         Si le document soumis n'est pas un CV, informe l'utilisateur que le document soumis n'est pas un CV et demande de soumettre un CV.
         Context: {context}
@@ -42,12 +42,12 @@ def get_conversational_chain():
         Answer: """
 
     model = ChatGoogleGenerativeAI(model="gemini-pro", temperature=0.3)
-    prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question", "sector"])
+    prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question", "sector", "internship_type"])
     chain = load_qa_chain(model, chain_type="stuff", prompt=prompt)
 
     return chain
 
-def user_input(user_question, text_chunks, sector):
+def user_input(user_question, text_chunks, sector, internship_type):
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
     vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
     docs = vector_store.similarity_search(user_question)
@@ -55,33 +55,36 @@ def user_input(user_question, text_chunks, sector):
     chain = get_conversational_chain()
     
     response = chain(
-        {"input_documents": docs, "question": user_question, "sector": sector},
+        {"input_documents": docs, "question": user_question, "sector": sector, "internship_type": internship_type},
         return_only_outputs=True
     )
 
     st.write("Reply: ", response["output_text"])
 
 def main():
-    st.set_page_config("centrale-internship")
-    st.header("Optimisez votre CV et obtenez des conseils de rédaction personnalisés")
+    st.set_page_config(page_title="Centrale Internship Analyzer")
+    st.header("Optimisez votre CV et obtenez des conseils de rédaction personnalisés grâce à notre chatbot intelligent !💁")
 
     user_question = "Analyse le CV"
 
     st.title("Menu:")
-    pdf_docs = st.file_uploader("Téléchargez un CV PDF et cliquez sur le bouton Soumettre et Traiter", accept_multiple_files=True)
+    pdf_docs = st.file_uploader("Téléchargez vos fichiers PDF et cliquez sur le bouton Soumettre et Traiter", accept_multiple_files=True)
     sector = st.text_input("Entrez le secteur d'activité où vous souhaitez faire un stage")
+    internship_type = st.selectbox("Choisissez le type de stage", ["Ouvrier", "Assistant Ingénieur", "Projet de Fin d'Études (PFE)", "Stage de Recherche"])
     if st.button("Soumettre et Traiter"):
         with st.spinner("Processing..."):
             if pdf_docs:
                 raw_text = get_pdf_text(pdf_docs)
                 text_chunks = get_text_chunks(raw_text)
                 st.success("Done")
-                if user_question and text_chunks and sector:           
-                    user_input(user_question, text_chunks, sector)
+                if user_question and text_chunks and sector and internship_type:
+                    user_input(user_question, text_chunks, sector, internship_type)
             else:
                 st.error("Veuillez télécharger au moins un fichier PDF.")
             if not sector:
                 st.error("Veuillez entrer un secteur d'activité.")
+            if not internship_type:
+                st.error("Veuillez choisir un type de stage.")
 
 if __name__ == "__main__":
     main()
