@@ -16,9 +16,10 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 def get_pdf_text(pdf_docs):
     text = ""
-    pdf_reader = PdfReader(pdf_docs)
-    for page in pdf_reader.pages:
-        text += page.extract_text()
+    for pdf in pdf_docs:
+        pdf_reader = PdfReader(pdf)
+        for page in pdf_reader.pages:
+            text += page.extract_text()
     return text
 
 def get_text_chunks(text):
@@ -61,13 +62,13 @@ def user_input(user_question, text_chunks, sector):
     st.write("Reply: ", response["output_text"])
 
 def main():
-    st.set_page_config(page_title="centrale-internship")
-    st.header("Optimisez votre CV et obtenez des conseils de rédaction personnalisés.")
+    st.set_page_config("centrale-internship")
+    st.header("Optimisez votre CV et obtenez des conseils de rédaction personnalisés")
 
     user_question = "Analyse le CV"
 
     st.title("Menu:")
-    pdf_docs = st.file_uploader("Téléchargez vos fichiers PDF et cliquez sur le bouton Soumettre et Traiter", accept_multiple_files=True)
+    pdf_docs = st.file_uploader("Téléchargez un CV PDF et cliquez sur le bouton Soumettre et Traiter", accept_multiple_files=True)
     sector = st.text_input("Entrez le secteur d'activité où vous souhaitez faire un stage")
     if st.button("Soumettre et Traiter"):
         with st.spinner("Processing..."):
@@ -84,4 +85,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
