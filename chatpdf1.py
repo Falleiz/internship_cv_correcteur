@@ -16,9 +16,9 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 def get_pdf_text(pdf_docs):
     text = ""
-        pdf_reader = PdfReader(pdf_docs)
-        for page in pdf_reader.pages:
-            text += page.extract_text()
+    pdf_reader = PdfReader(pdf_docs)
+    for page in pdf_reader.pages:
+        text += page.extract_text()
     return text
 
 def get_text_chunks(text):
