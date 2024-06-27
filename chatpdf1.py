@@ -68,7 +68,7 @@ def main():
     user_question = "Analyse mon CV"
 
     st.title("Menu:")
-    pdf_docs = st.file_uploader("Téléchargez vos CV format PDF et cliquez sur le bouton Soumettre et Traiter", accept_multiple_files=False)
+    pdf_docs = st.file_uploader("Téléchargez vos CV format PDF et cliquez sur le bouton Soumettre et Traiter", accept_multiple_files=True)
     sector = st.text_input("Entrez le secteur d'activité où vous souhaitez faire un stage")
     internship_type = st.selectbox("Choisissez le type de stage", ["Ouvrier", "Assistant Ingénieur", "Projet de Fin d'Études (PFE)", "Stage de Recherche"])
     if st.button("Soumettre et Traiter"):
