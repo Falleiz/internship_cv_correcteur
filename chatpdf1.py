@@ -63,12 +63,12 @@ def user_input(user_question, text_chunks, sector, internship_type):
 
 def main():
     st.set_page_config(page_title="Centrale Internship Analyzer")
-    st.header("Optimisez votre CV et obtenez des conseils de rédaction personnalisés grâce à notre chatbot intelligent !💁")
+    st.header("Optimisez votre CV et obtenez des conseils de rédaction personnalisés")
 
-    user_question = "Analyse le CV"
+    user_question = "Analyse mon CV"
 
     st.title("Menu:")
-    pdf_docs = st.file_uploader("Téléchargez vos fichiers PDF et cliquez sur le bouton Soumettre et Traiter", accept_multiple_files=True)
+    pdf_docs = st.file_uploader("Téléchargez vos CV format PDF et cliquez sur le bouton Soumettre et Traiter", accept_multiple_files=False)
     sector = st.text_input("Entrez le secteur d'activité où vous souhaitez faire un stage")
     internship_type = st.selectbox("Choisissez le type de stage", ["Ouvrier", "Assistant Ingénieur", "Projet de Fin d'Études (PFE)", "Stage de Recherche"])
     if st.button("Soumettre et Traiter"):
